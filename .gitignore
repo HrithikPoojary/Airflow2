@@ -1,0 +1,11 @@
+# Airflow runtime (never commit)
+airflow-data/
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
