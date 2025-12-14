@@ -13,8 +13,12 @@ with DAG(
                 task_id = "taks_a"
         )
 
+        task_c = DummyOperator(
+                task_id = "taks_c"
+        )
+
         task_b = DummyOperator(
                 task_id = "task_b"
         )
 
-        task_a >> task_b
+        task_a >> task_c >>task_b
