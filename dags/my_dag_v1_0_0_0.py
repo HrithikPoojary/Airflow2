@@ -5,8 +5,8 @@ from airflow.operators.bash import BashOperator #type:ignore
 
 with DAG(
         dag_id = 'my_dag_v1_0_0_0',
-        start_date = datetime(2025,1,1),
-        schedule_interval = '@daily',
+        start_date = datetime.now(),
+        schedule_interval = '*/1 * * * *',
         catchup = False
          ) as dag :
         
