@@ -1,7 +1,8 @@
 # Airflow runtime (never commit)
-airflow-data/
 logs/
 *.log
+
+airflow-data/airflow.cfg
 
 # Python
 __pycache__/

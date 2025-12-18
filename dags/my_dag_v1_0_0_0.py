@@ -14,6 +14,11 @@ defualt_args = {
 # default_email_on_retry = True
 # default_email_on_failure = True
 
+#Customize Mail
+# Add Two Arguments
+# 1) subject_templates = /opt/airflow/includes/subject_templates.txt
+# 2) html_content_template  = /opt/airflow/includes/html_templates.txt
+
 
 with DAG(
         dag_id = 'my_dag_v1_0_0_0',
