@@ -21,6 +21,7 @@ with DAG(
                 task_id = "task_b",
                 retries = 3,
                 retry_delay = timedelta(seconds = 10),
+                retry_exponential_backoff = True,
                 bash_command = "sleep 5 && exit 1"
         )
 
