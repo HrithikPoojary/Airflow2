@@ -1,5 +1,5 @@
 from airflow import DAG #type:ignore
-from datetime import datetime
+from datetime import datetime,timedelta
 from airflow.operators.bash import BashOperator #type:ignore
 
 
@@ -20,7 +20,8 @@ with DAG(
                 owner = 'Luffy',
                 task_id = "task_b",
                 retries = 3,
-                bash_command = "echo 'Task B' && exit 1"
+                retry_delay = timedelta(seconds = 10),
+                bash_command = "sleep 5 && exit 1"
         )
 
         task_a >> task_b
