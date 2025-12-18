@@ -22,7 +22,7 @@ with DAG(
                 retries = 3,
                 retry_delay = timedelta(seconds = 10),
                 retry_exponential_backoff = True,
-                bash_command = "sleep 5 && exit 1"
+                bash_command = "echo '{{ti.try_number}}' && exit 1"
         )
 
         task_a >> task_b
