@@ -4,7 +4,7 @@ from airflow.operators.bash import BashOperator #type:ignore
 from airflow.operators.python import PythonOperator #type:ignore
 
 def _my_func(execution_date):
-        if execution_date.day == 5 :
+        if execution_date.day ==5 :
                 raise ValueError("Error")
 
 with DAG(
@@ -24,13 +24,12 @@ with DAG(
                 retries = 3,
                 retry_exponential_backoff = True,
                 retry_delay = timedelta(seconds=5),
-                bash_command = "echo 'task B' && exit  1"       
+                bash_command = "echo 'task B' && exit  0"       
         )
 
         task_c = PythonOperator(
                 task_id = 'task_c',
-                python_callable = _my_func,
-                depends_on_past = True
+                python_callable = _my_func
         )
 
         task_a >> task_b >> task_c
