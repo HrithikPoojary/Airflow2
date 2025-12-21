@@ -1,47 +1,39 @@
-from airflow import DAG                               #type:ignore
-from airflow.operators.python import PythonOperator   #type:ignore
-from datetime import datetime
+from airflow import DAG   #type:ignore
+from datetime import datetime,timedelta
+from airflow.operators.bash import BashOperator  #type:ignore
+from airflow.operators.python import PythonOperator #type:ignore
 
+def _my_func(execution_date):
+        if execution_date.day == 5:
+                raise ValueError("Error")
 
-''' task_b cannot start until task_a finishes, the 
- priority_weight determines how quickly task_a gets a worker slot compared to 
-tasks in other DAGs or other branches of the same DAG. '''
-
-def simple_task(**kwargs):
-    print(kwargs)
+def _sla_miss(dag,task_list,blocking_task_list,slas,blocking_tis):
+        print(f"Dag id {dag} for SLA {slas}")
 
 with DAG(
-    dag_id='weight_rule_demonstration',
-    start_date=datetime(2025, 12, 1),
-    schedule=None,
-    catchup=False
+        dag_id = 'DownStream',
+        start_date = datetime(25,12,10),
+        schedule_interval = '*/2 * * * *',  #2 mints  airflow > admin > sla misses
+        sla_miss_callback = _sla_miss,
+        catchup = False
 ) as dag:
+        task_a = BashOperator(
+                task_id = 'task_a',
+                bash_command = "echo Task A && sleep 10",
+                sla = timedelta(seconds=5)
+        )
 
-    # 1. DOWNSTREAM (Default)
-    # This task will have a high priority because it has many downstream dependencies.
-    task_a = PythonOperator(
-        task_id='downstream_rule_task',
-        python_callable=simple_task,
-        priority_weight=10,
-        weight_rule='downstream' 
-    )
+        task_b = BashOperator(
+                task_id = 'task_b',
+                bash_command = "echo Task B && exit 0",
+                retries = 3 ,
+                retry_delay = timedelta(seconds = 10)
+        )
 
-    # 2. ABSOLUTE
-    # This task will have a weight of exactly 5, regardless of its position in the DAG.
-    task_b = PythonOperator(
-        task_id='absolute_rule_task',
-        python_callable=simple_task,
-        priority_weight=5,
-        weight_rule='absolute'
-    )
+        task_c = PythonOperator(
+                task_id = 'task_c',
+                python_callable = _my_func,
+                depends_on_past = True
+        )
 
-    # 3. UPSTREAM
-    # This task's priority grows based on how many tasks came before it.
-    task_c = PythonOperator(
-        task_id='upstream_rule_task',
-        python_callable=simple_task,
-        priority_weight=1,
-        weight_rule='upstream'
-    )
-
-    task_a >> task_b >> task_c
+        task_a >> task_b >> task_c
