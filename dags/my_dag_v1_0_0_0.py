@@ -31,24 +31,27 @@ with DAG(
                 retries = 3,
                 retry_exponential_backoff = True,
                 retry_delay = timedelta(seconds=5),
-                bash_command = "echo 'task B' && sleep 20"       
-        )
+                bash_command = "echo 'task B' && sleep 20",
+                pool = "process_pool"   # Airflow > admin > pool > create slots = 1       
+        )                               # Randomly one task will pick and run
 
         process_b = BashOperator(
                 task_id = 'process_b',
                 retries = 3,
                 retry_exponential_backoff = True,
                 retry_delay = timedelta(seconds=5),
-                bash_command = "echo 'task B' && sleep 20"       
-        )
+                bash_command = "echo 'task B' && sleep 20",
+                pool = "process_pool"   # Airflow > admin > pool > create  slots = 1         
+        )                               # Randomly one task will pick and run
 
         process_c = BashOperator(
                 task_id = 'process_c',
                 retries = 3,
                 retry_exponential_backoff = True,
                 retry_delay = timedelta(seconds=5),
-                bash_command = "echo 'task B' && sleep 20"       
-        )
+                bash_command = "echo 'task B' && sleep 20" ,
+                pool = "process_pool"   # Airflow > admin > pool > create  slots = 1       
+        )                               # Randomly one task will pick and run
 
         store = PythonOperator(
                 task_id = 'task_c',
@@ -60,3 +63,5 @@ with DAG(
 
         cross_downstream([extract_a,extract_b] , [process_a,process_b,process_c])
         [process_a,process_b,process_c] >> store
+
+        # Aiflow > admin > pool > defalut pool = 128 while triggering the dag running slots will increase based on the task run  
