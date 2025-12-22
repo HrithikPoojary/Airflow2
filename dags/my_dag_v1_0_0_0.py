@@ -16,7 +16,7 @@ with DAG(
         task_a = BashOperator(
                 task_id = 'task_a',
                 bash_command = "echo Task A && sleep 10",
-                execution_timeout = timedelta(seconds=12)
+                execution_timeout = timedelta(seconds=9)
         )
 
         task_b = BashOperator(
