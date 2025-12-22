@@ -7,20 +7,16 @@ def _my_func(execution_date):
         if execution_date.day == 5:
                 raise ValueError("Error")
 
-def _sla_miss(dag,task_list,blocking_task_list,slas,blocking_tis):
-        print(f"Dag id {dag} for SLA {slas}")
-
 with DAG(
         dag_id = 'DownStream',
         start_date = datetime(25,12,10),
-        schedule_interval = '*/2 * * * *',  #2 mints  airflow > admin > sla misses
-        sla_miss_callback = _sla_miss,
+        schedule_interval = '@daily',  #2 mints  airflow > admin > sla misses
         catchup = False
 ) as dag:
         task_a = BashOperator(
                 task_id = 'task_a',
                 bash_command = "echo Task A && sleep 10",
-                sla = timedelta(seconds=5)
+                execution_timeout = timedelta(seconds=12)
         )
 
         task_b = BashOperator(
