@@ -4,9 +4,6 @@ from airflow.operators.bash import BashOperator         #type:ignore
 from airflow.operators.python import PythonOperator     #type:ignore
 from airflow.utils.helpers import cross_downstream      #type:ignore
 
-#Airflow >> Dag >> graph view click on task >> logs >> output : <return value> (Stored in Xcoms)
-#Aiflow >> Dag >> Admin >> Xcoms
-
 def _extract_a_success(context):
         print(context)
         print(f"Luffy's dag {context['dag']}")
@@ -17,8 +14,8 @@ def _extract_b_failure(context):
 
 def _my_func(execution_date,ti):
         ti.xcom_push(key = 'store_return',value = 3)
-        print("Hello world 1 print")              # It won't store this      
-        return "Hello World 2 Return statement"   # It will store in Xcom
+        print("Hello world 1 print")                   
+        return "Hello World 2 Return statement"   
 
 def _pull_xcom(ti):
         x_comvalues = ti.xcom_pull(
@@ -32,7 +29,7 @@ with DAG(
         dag_id = 'Xcom',
         start_date = datetime(25,12,15),
         schedule_interval = "@daily",
-        catchup = False
+        catchup = True
 ) as dag:
         
         extract_a = BashOperator(
@@ -40,14 +37,16 @@ with DAG(
                 task_id = 'extract_a',
                 bash_command = "echo 'Task_a' && sleep 5",  # Xcom -> Task_a
                 wait_for_downstream = True,
-                on_success_callback = _extract_a_success 
+                on_success_callback = _extract_a_success,
+                task_concurrency =1 
         )
 
         extract_b = BashOperator(
                 owner = "Zoro",
                 task_id = 'extract_b',
                 bash_command = "echo 'Task b' && sleep 5", #Xcom -> Task_b
-                on_failure_callback = _extract_b_failure
+                on_failure_callback = _extract_b_failure,
+                task_concurrency =1 
         )
 
         process_a = BashOperator(
