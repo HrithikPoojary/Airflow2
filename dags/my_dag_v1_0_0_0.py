@@ -1,53 +1,89 @@
-from airflow import DAG   #type:ignore
+from airflow import DAG                                 #type:ignore
 from datetime import datetime,timedelta
-from airflow.operators.bash import BashOperator  #type:ignore
-from airflow.operators.python import PythonOperator #type:ignore
+from airflow.operators.bash import BashOperator         #type:ignore
+from airflow.operators.python import PythonOperator     #type:ignore
+from airflow.utils.helpers import cross_downstream      #type:ignore
 
-'''
-on_success_callback
-on_failure_callback
-on_execute_callback
-on_retry_callback
-We will get context we can use it in the callable function
-To track Airflow  >> logs
-'''
+#Airflow >> Dag >> graph view click on task >> logs >> output : <return value> (Stored in Xcoms)
+#Aiflow >> Dag >> Admin >> Xcoms
 
-def _my_func(execution_date):
-        if execution_date.day == 5:
-                raise ValueError("Error")
-def _task_a_sucess(context):
+def _extract_a_success(context):
         print(context)
-        print(f"Luffy's Dag Run {context['dag']}")
+        print(f"Luffy's dag {context['dag']}")
 
-def _task_b_failure(context):
+def _extract_b_failure(context):
         print(context)
-        print(f"Failed due to {context['exception']}")
+        print(f"Exception occurred when {context['exception']}")
+
+def _my_func(execution_date,ti):
+        ti.xcom_push(key = 'store_return',value = 3)
+        print("Hello world 1 print")              # It won't store this      
+        return "Hello World 2 Return statement"   # It will store in Xcom
+
+def _pull_xcom(ti):
+        x_comvalues = ti.xcom_pull(
+                                task_ids = ['process_a','process_b','process_c','store'],
+                                key = 'return_value'
+                                )
+        print(x_comvalues)
+
 
 with DAG(
-        dag_id = 'DownStream',
-        start_date = datetime(25,12,10),
-        schedule_interval = '@daily',  #2 mints  airflow > admin > sla misses
+        dag_id = 'Xcom',
+        start_date = datetime(25,12,15),
+        schedule_interval = "@daily",
         catchup = False
 ) as dag:
-        task_a = BashOperator(
-                task_id = 'task_a',
-                bash_command = "echo Task A && sleep 10",
-                execution_timeout = timedelta(seconds=20),
-                on_success_callback=_task_a_sucess
+        
+        extract_a = BashOperator(
+                owner = 'Luffy',
+                task_id = 'extract_a',
+                bash_command = "echo 'Task_a' && sleep 5",  # Xcom -> Task_a
+                wait_for_downstream = True,
+                on_success_callback = _extract_a_success 
         )
 
-        task_b = BashOperator(
-                task_id = 'task_b',
-                bash_command = "echo Task B && exit 1",
-                retries = 3 ,
-                retry_delay = timedelta(seconds = 10),
-                on_failure_callback = _task_b_failure
+        extract_b = BashOperator(
+                owner = "Zoro",
+                task_id = 'extract_b',
+                bash_command = "echo 'Task b' && sleep 5", #Xcom -> Task_b
+                on_failure_callback = _extract_b_failure
         )
 
-        task_c = PythonOperator(
-                task_id = 'task_c',
-                python_callable = _my_func,
-                depends_on_past = True
+        process_a = BashOperator(
+                owner = "Nami",
+                task_id = 'process_a',
+                bash_command = "echo {{ti.priority_weight}} && sleep 5",
+                pool = "process_pool",
+                do_xcom_push = True            # Won't store
         )
 
-        task_a >> task_b >> task_c
+        process_b = BashOperator(
+                owner = "Ussop",
+                task_id = 'process_b',
+                bash_command = "echo {{ti.priority_weight}} && sleep 5",
+                pool = "process_pool",
+                do_xcom_push = True           #Won't Store
+        )
+
+        process_c = BashOperator(
+                owner = "Sanji",
+                task_id = 'process_c',
+                bash_command = "echo {{ti.priority_weight}} && sleep 5",
+                pool = "process_pool",
+                do_xcom_push = True          #Wont store
+        )
+
+        store = PythonOperator(
+                task_id = 'store',
+                python_callable = _my_func
+        )
+
+        pull_xcom = PythonOperator(
+                task_id = 'pull_xcom',
+                python_callable = _pull_xcom
+        )
+
+        cross_downstream([extract_a,extract_b], [process_a,process_b,process_c])
+        [process_a,process_b,process_c] >> store >> pull_xcom
+
