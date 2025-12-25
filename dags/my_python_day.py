@@ -16,5 +16,8 @@ with DAG(
      task_a = PythonOperator(
           task_id = 'task_a',
           python_callable = _process,
-          op_args = ['usr/local/aiflow' , 'test.csv']
+          op_kwargs = {
+             'path'    :  'usr/local/aiflow' , 
+             'filename':  'test.csv'  
+          }
      )   
