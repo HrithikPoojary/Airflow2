@@ -1,6 +1,14 @@
 from airflow.models import DAG  # type:ignore
 from datetime import datetime
 from airflow.providers.postgres.operators.postgres import PostgresOperator #type:ignore
+from airflow.operators.python import PythonOperator #type:ignore
+
+class CustomPythonOperator(PostgresOperator):
+
+        template_fields = ("sql","parameters")
+
+def _my_task():
+        return 'Sanji'
 
 with DAG(
         dag_id = 'my_postgres_dag',
@@ -15,14 +23,21 @@ with DAG(
                 sql = "sql/CREATE_TABLE_MY_TABLE.sql"
         )
 
-        insert_row = PostgresOperator(
+        
+        my_task = PythonOperator(
+                task_id = 'my_task',
+                python_callable = _my_task
+        )
+
+        insert_row = CustomPythonOperator(
                 task_id = 'insert_row',
                 postgres_conn_id = "postgres",
                 sql = [ "sql/INSERT_TABLE_MY_TABLE.sql",
                        'select * from my_table;' 
                 ],
-                #OUTPUT -> Running statement: select * from my_table;, parameters: {'piratename': 'Ussop'} 
+                # We cannot dynamically pass parameter here 
+                # So we can customize python operator
                 parameters  = {
-                        'piratename' : 'Ussop'
+                        'piratename' : '{{ti.xcom_pull(task_ids = ["my_task"])}}'
                 }
         )
