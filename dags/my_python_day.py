@@ -2,9 +2,15 @@ from airflow.models import DAG  #type:ignore
 from datetime import datetime
 from airflow.operators.python import PythonOperator #type:ignore
 
+# op_args = Order matter
+# op_kwargs = order doesn't matter
+# Normal way 
+
+path = 'gobal/local/airflow'
+filename = 'insta.csv'
+
 def _process(path,filename):
      print(f"{path}/{filename}")
-
 
 with DAG(
         dag_id = 'my_python_dag',
@@ -17,7 +23,7 @@ with DAG(
           task_id = 'task_a',
           python_callable = _process,
           op_kwargs = {
-             'path'    :  'usr/local/aiflow' , 
-             'filename':  'test.csv'  
+             'path'    :  path, 
+             'filename':  filename 
           }
      )   
