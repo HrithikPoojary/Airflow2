@@ -1,0 +1,1 @@
+create table if not exists my_table(table_value text not null , primary key (table_value));
