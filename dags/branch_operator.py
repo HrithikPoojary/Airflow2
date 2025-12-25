@@ -2,14 +2,17 @@ from airflow.models import DAG #type:ignore
 from datetime import datetime
 from airflow.operators.dummy import DummyOperator #type:ignore
 from airflow.operators.python import BranchPythonOperator #type:ignore
+import yaml #type:ignore
 
 # In this function we return next run task
-def _check_accuaracy():
-        accuracy = 0.16
-        if accuracy > 0.15 :
-                return 'accurate'
-        else:
-                return 'inaccurate'
+def _check_holidays(**context):
+        with open ('dags/files/holidays_file.yml','r') as f:
+                days_off = set(yaml.load(f,Loader = yaml.FullLoader))
+                if context['ds'] not in days_off:
+                        return 'process'
+                else:
+                        'stop'
+
 
 with DAG(
         dag_id = 'branch_operator_dag',
@@ -18,20 +21,19 @@ with DAG(
         catchup = False
         )  as dag:
 
-        training_ml = DummyOperator(task_id = 'training_ml')
-
-        check_accuracy = BranchPythonOperator(
-                task_id = 'check_accuracy',
-                python_callable = _check_accuaracy
+        check_holidays = BranchPythonOperator(
+                task_id = 'check_holidays',
+                python_callable = _check_holidays
         )
 
-        accurate = DummyOperator(task_id = 'accurate')
+        process = DummyOperator(task_id = 'process')
 
-        inaccurate = DummyOperator(task_id = 'inaccute')
+        cleaning = DummyOperator(task_id = 'cleaning')
 
-        publish_ml = DummyOperator(task_id = "publish_ml",trigger_rule = "none_failed_or_skipped")
+        stop = DummyOperator(task_id = 'stop')
 
         # Publish_ml task will be skipped because defualt trigger rule (all_success)
         # all_success -> All parent task should compplete.
         # to avoid that use trigger rule = none_failed_or_skipped
-        training_ml >> check_accuracy >> [accurate,inaccurate] >> publish_ml
+        check_holidays >> [process,stop]
+        process >> cleaning
