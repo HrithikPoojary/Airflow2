@@ -29,7 +29,7 @@ with DAG(
         dag_id = 'Xcom',
         start_date = datetime(25,12,15),
         schedule_interval = "@daily",
-        catchup = True
+        catchup = False
 ) as dag:
         
         extract_a = BashOperator(
