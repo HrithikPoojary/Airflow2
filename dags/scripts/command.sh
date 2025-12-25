@@ -2,4 +2,4 @@
 
 
 echo 'My API {{var.value.api_key_aws}}'
-exit 0
+exit 10

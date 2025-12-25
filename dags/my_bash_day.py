@@ -11,8 +11,8 @@ with DAG(
                 task_id = 'execute_command',
                 bash_command = "scripts/command.sh",
                 do_xcom_push = False,
-                # api_aws : ***
-                # api_key , access_token , password ,secret ,authorization so on ..In that case values automatically hidden                env = {
+                skip_exit_code = 10,  # exit 10 this will skip the task when there is error default 99 
+                # output - Marking task as SKIPPED
                 env = {        
                         "api_aws" : "{{var.value.api_key_aws}}"
                 }
