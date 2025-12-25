@@ -1,10 +1,14 @@
 from airflow.models import DAG ,Variable #type:ignore
 from datetime import datetime
+from typing import Dict
 from airflow.operators.python import PythonOperator #type:ignore
 
 
-def _process(path,filename):
-     print(f"{path}/{filename}")
+def _process(path,filename,**context : Dict):
+     print(context)
+     print(f"{path}/{filename} - {context['ds']}")
+     # or we can directly pass def _process(path,filename,ds):
+     # Not allowed def _process(**context ,path,filename):
 
 with DAG(
         dag_id = 'my_python_dag',
