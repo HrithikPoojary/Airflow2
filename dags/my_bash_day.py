@@ -11,8 +11,7 @@ with DAG(
                 task_id = 'execute_command',
                 bash_command = "scripts/command.sh",
                 do_xcom_push = False,
-                skip_exit_code = 10,  # exit 10 this will skip the task when there is error default 99 
-                # output - Marking task as SKIPPED
+                skip_exit_code = 10,
                 env = {        
                         "api_aws" : "{{var.value.api_key_aws}}"
                 }

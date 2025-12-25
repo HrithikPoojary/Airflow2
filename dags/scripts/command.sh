@@ -1,5 +1,5 @@
 #!/bin/bash
 
-
-echo 'My API {{var.value.api_key_aws}}'
-exit 10
+#we connot change the user in bash using airflow
+whoami
+exit 0
