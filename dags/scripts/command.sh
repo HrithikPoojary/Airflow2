@@ -1,4 +1,5 @@
 #!/bin/bash
 
-echo 'execute my command'
+
+env
 exit 0

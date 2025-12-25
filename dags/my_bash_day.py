@@ -10,5 +10,8 @@ with DAG(
         execute_command = BashOperator(
                 task_id = 'execute_command',
                 bash_command = "scripts/command.sh",
-                do_xcom_push = False
+                do_xcom_push = False,
+                env = {
+                        "MY_VAR" : "MY_VAL"
+                }
         )
