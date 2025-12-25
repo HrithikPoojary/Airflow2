@@ -11,21 +11,12 @@ with DAG(
         
         create_table = PostgresOperator(
                 task_id = 'create_table',
-                #To create (postgres_conn_id)
-                #Airflow > admin > connections
-                #Conn Id = postgres
-                #conn type = postgres
-                #host = postgres
-                #login = postgres
-                #passeword = postgres
-                #port = 5432
                 postgres_conn_id = "postgres",
                 sql = "create table my_table(table_value text not null , primary key (table_value));"
         )
-        '''
-        To connect Postgres
-        docker ps
-        docker exec -it <postgres container_id> /bin/bash
-        root@ce37da20b8ad:/# > psql -Upostgres
-        postgres=# select * from table_name;
-        '''
+
+        insert_row = PostgresOperator(
+                task_id = 'insert_row',
+                postgres_conn_id = "postgres",
+                sql = "insert into my_table values('Luffy');"
+        )
