@@ -8,10 +8,11 @@ import yaml #type:ignore
 def _check_holidays(**context):
         with open ('dags/files/holidays_file.yml','r') as f:
                 days_off = set(yaml.load(f,Loader = yaml.FullLoader))
-                if context['ds'] not in days_off:
+                holiday_list = ['2025-12-23','2025-12-25','2025-12-25','2025-12-26']
+                if context['ds'] not in holiday_list:
                         return 'process'
                 else:
-                        'stop'
+                        return 'stop'
 
 
 with DAG(
