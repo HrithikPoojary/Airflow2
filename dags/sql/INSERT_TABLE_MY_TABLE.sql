@@ -1,1 +1,1 @@
-insert into my_table values('Luffy');
+insert into my_table values(%(piratename)s);
