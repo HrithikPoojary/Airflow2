@@ -19,11 +19,13 @@ with DAG(
         catchup = False
 ) as dag:
 
+     #airflow > variable > key : path , value : /opt/local/airflow
+     #                     filename : filename , value :tweets.csv    
      task_a = PythonOperator(
           task_id = 'task_a',
           python_callable = _process,
           op_kwargs = {
-             'path'    :  path, 
-             'filename':  filename 
+             'path'    :  '{{ var.value.path}}',      # var = variable 
+             'filename':  '{{var.value.filepath}}'    # var = variable
           }
      )   
