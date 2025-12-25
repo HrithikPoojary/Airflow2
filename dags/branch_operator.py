@@ -29,4 +29,9 @@ with DAG(
 
         inaccurate = DummyOperator(task_id = 'inaccute')
 
-        training_ml >> check_accuracy >> [accurate,inaccurate]
+        publish_ml = DummyOperator(task_id = "publish_ml",trigger_rule = "none_failed_or_skipped")
+
+        # Publish_ml task will be skipped because defualt trigger rule (all_success)
+        # all_success -> All parent task should compplete.
+        # to avoid that use trigger rule = none_failed_or_skipped
+        training_ml >> check_accuracy >> [accurate,inaccurate] >> publish_ml
