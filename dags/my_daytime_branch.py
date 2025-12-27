@@ -3,6 +3,9 @@ from datetime import datetime,timedelta
 from airflow.operators.bash import BashOperator #type:ignore
 from airflow.sensors.external_task import ExternalTaskSensor #type:ignore
 
+def _my_fun(execution_date):
+        return [execution_date -timedelta(minutes=5)]  #equivalent tp execution delta
+
 default_args = {
         'start_date' : datetime(25,12,20)
 }
@@ -22,8 +25,10 @@ with DAG(
                 task_id = 'waiting_for_task',
                 external_dag_id = 'parent_dag',
                 external_task_id = 'end',
-                # parent_dag = 1:10 and task sensor 1:15 difference is 5 mints (-5)
-                execution_delta = timedelta(minutes = 5) 
+                # we can use more complex execution time or date here
+                execution_date_fn = _my_fun,
+                timeout = 5 * 60 , # we cannot wait forever
+                mode = 'reschedule' # to release resource like workers and to avoid deadlock issue.
         )
         
         training_ml = BashOperator(
