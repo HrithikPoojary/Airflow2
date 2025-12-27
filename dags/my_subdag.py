@@ -19,10 +19,20 @@ with DAG(
                 task_id = 'start',
                 bash_command = "echo 'start' "
         )
-        # Airlow >> parent_dag >> graph view >> subdag_group_id >> zoom into sub dag
+        # - AIRFLOW__CORE__PARALLELISM=3  Only 3 task can be run at a time If you trigger this we will get deadlock issue
         subdag_group_id = SubDagOperator(
                 task_id = 'subdag_group_id',  # Subdag Id
                 subdag = subdag_factory('parent_dag','subdag_group_id',default_args)
+        )
+
+        subdag_group_id_2 = SubDagOperator(
+                task_id = 'subdag_group_id_2',  # Subdag Id
+                subdag = subdag_factory('parent_dag','subdag_group_id_2',default_args)
+        )
+
+        subdag_group_id_3 = SubDagOperator(
+                task_id = 'subdag_group_id_3',  # Subdag Id
+                subdag = subdag_factory('parent_dag','subdag_group_id_3',default_args)
         )
         
 
@@ -31,4 +41,4 @@ with DAG(
                 bash_command = "echo 'end' "
         )
 
-        start >> subdag_group_id >> end 
+        start >> [subdag_group_id,subdag_group_id_2,subdag_group_id_3] >> end 
