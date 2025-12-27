@@ -12,4 +12,14 @@ def task_group():
                 
                 training_c = BashOperator(task_id = 'training_c',
                                         bash_command = "echo 'training_c'")
+                
+                with TaskGroup('task_group_publish_id') as publish_tasks:
+                        publish_a = BashOperator(task_id = 'publish_a',
+                                                bash_command = "echo 'publish_a'")
+                        
+                        publish_b = BashOperator(task_id = 'publish_b',
+                                                bash_command = "echo 'publish_b'")
+                        
+                        publish_c = BashOperator(task_id = 'publish_c',
+                                                bash_command = "echo 'publish_c'")
         return training_tasks
