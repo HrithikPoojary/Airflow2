@@ -1,14 +1,16 @@
 from airflow.models import DAG #type:ignore
 from datetime import datetime
 from airflow.operators.bash import BashOperator #type:ignore
+from airflow.operators.subdag import SubDagOperator #type:ignore
+from dags.subdag import subdag_factory
 
 default_args = {
-        'schedule_interval' : "daily"
+        'schedule_interval' : "daily",
+        'start_date' : datetime(25,12,20)
 }
 
 with DAG(
         dag_id = 'parent_dag',
-        start_date = datetime(25,12,20),
         default_args = default_args,
         catchup = False
 ) as dag:
@@ -17,15 +19,16 @@ with DAG(
                 task_id = 'start',
                 bash_command = "echo 'start' "
         )
-
-
-        training_a = BashOperator(task_id = 'training_a',bash_command = "echo 'training_a' ")
-        training_b = BashOperator(task_id = 'training_b',bash_command = "echo 'training_b' ")
-        training_c = BashOperator(task_id = 'training_c',bash_command = "echo 'training_c' ")
+        # Airlow >> parent_dag >> graph view >> subdag_group_id >> zoom into sub dag
+        subdag_group_id = SubDagOperator(
+                task_id = 'subdag_group_id',  # Subdag Id
+                subdag = subdag_factory('parent_dag','subdag_group_id',default_args)
+        )
+        
 
         end = BashOperator(
                 task_id = 'end',
                 bash_command = "echo 'end' "
         )
 
-        start >> [training_a,training_b,training_c] >> end 
+        start >> subdag_group_id >> end 
