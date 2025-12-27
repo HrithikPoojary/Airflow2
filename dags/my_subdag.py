@@ -22,17 +22,20 @@ with DAG(
         # - AIRFLOW__CORE__PARALLELISM=3  Only 3 task can be run at a time If you trigger this we will get deadlock issue
         subdag_group_id = SubDagOperator(
                 task_id = 'subdag_group_id',  # Subdag Id
-                subdag = subdag_factory('parent_dag','subdag_group_id',default_args)
-        )
-
-        subdag_group_id_2 = SubDagOperator(
-                task_id = 'subdag_group_id_2',  # Subdag Id
-                subdag = subdag_factory('parent_dag','subdag_group_id_2',default_args)
-        )
-
-        subdag_group_id_3 = SubDagOperator(
-                task_id = 'subdag_group_id_3',  # Subdag Id
-                subdag = subdag_factory('parent_dag','subdag_group_id_3',default_args)
+                subdag = subdag_factory('parent_dag','subdag_group_id',default_args),
+                # mode - sub operator wont keep a worker slot forever util its completion. 
+                # it willrelease the worker slot perodically so that if there is any other tasks to execute
+                # then those tasks will be able to triggered and then   the sub operator will take a 
+                # worker slot again after that. 
+                mode = 'reschedule' ,
+                # timeout - you are going to end up with a failure if your sub operator is taking longer
+                # thank 5 mints to completes to complete 
+                timeout = 60 * 5,  #5 mints
+                # pool - the allocated pool will be repected by the suboperator and not the tasks 
+                # that are in your sub dag, inside the tasks won't be executed in the pool.
+                # instead of using pool here we can use in subdag.py default_args
+                
+                # pool = "training_ml"
         )
         
 

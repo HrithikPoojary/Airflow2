@@ -3,6 +3,7 @@ from airflow.operators.bash import BashOperator #type:ignore
 
 
 def subdag_factory(parent_dag_id,subdag_id,default_args):
+        default_args['pool'] = 'training_ml'
         with DAG(
                 dag_id = f"{parent_dag_id}.{subdag_id}",
                 default_args = default_args
