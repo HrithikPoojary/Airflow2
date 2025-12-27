@@ -1,7 +1,7 @@
 from airflow.models import DAG  #type:ignore
 from datetime import datetime,time
 from airflow.operators.datetime import BranchDateTimeOperator #type:ignore
-from airfow.operators.dummy import DummyOperator #type:ignore
+from airflow.operators.dummy import DummyOperator #type:ignore
 
 default_args = {
         'start_date' : datetime(25,12,20),
@@ -18,7 +18,7 @@ with DAG(
                 follow_task_ids_true = ['move_forward'],
                 follow_task_ids_false = ['end'],
                 target_lower = time(10,0,0),
-                target_upper = time(11,0,0)
+                target_upper = time(11,0,0),
                 # Default it consider current date but, 
                 # if any backdated run is present that time it will fail 
                 # better we should use excecution date.
