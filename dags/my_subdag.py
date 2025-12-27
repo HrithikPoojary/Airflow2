@@ -6,12 +6,13 @@ from dags.subdag import subdag_factory
 from task_groups import task_group
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator #type:ignore
 default_args = {
-        'start_date' : datetime(25,12,20),
-        'schedule_interval' : "@daily"
+        'start_date' : datetime(25,12,20)
+        
 }
 
 with DAG(
         dag_id = 'parent_dag',
+        schedule_interval  = "10 * * * *",   
         default_args = default_args,
         catchup = False
 ) as dag:
