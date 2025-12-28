@@ -26,8 +26,9 @@ with DAG(
 
         is_monday = ShortCircuitOperator(
                 task_id = 'is_monday',
-                # If python functions return false then the downstream tasks of is weekly of the
+                # If python functions return false then the all downstream tasks of is weekly of the
                 # -short circuit operator will be skipped.
+                # if you want run specific tasks like last task we can use trigger rule and BranchPythonOperator
                 python_callable = _is_monday
         )
 
